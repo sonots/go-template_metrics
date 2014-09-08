@@ -16,6 +16,9 @@ func main() {
 
   formTmpl.Execute(w, struct)
   formTmpl.ExecuteTemplate(w, "base", struct)
+
+  template_metrics.Verbose = true // print metrics on each rendering
+  template_metrics.Print() // print metrics on each second
 }
 ```
 
