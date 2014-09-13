@@ -20,32 +20,36 @@ var proxyRegistry = make(map[string](*proxyTemplate))
 type proxyTemplate struct {
 	name     string
 	original *template.Template
-	timer    metrics.Timer
+	timers   map[string]metrics.Timer
 }
 
 func newProxyTemplate(name string, template *template.Template) *proxyTemplate {
 	return &proxyTemplate{
 		name:     name,
 		original: template,
-		timer:    metrics.NewTimer(),
+		timers:   map[string]metrics.Timer{},
 	}
 }
 
 //print the elapsed time on each request if Verbose flag is true
-func (proxy *proxyTemplate) printVerbose(elapsedTime time.Duration) {
-	fmt.Printf("time:%v\ttemplate:%s\telapsed:%f\n",
+func (proxy *proxyTemplate) printVerbose(elapsedTime time.Duration, base string) {
+	fmt.Printf("time:%v\ttemplate:%s\tbase:%s\telapsed:%f\n",
 		time.Now(),
 		proxy.name,
+		base,
 		elapsedTime.Seconds(),
 	)
 }
 
 //measure the time
-func (proxy *proxyTemplate) measure(startTime time.Time) {
+func (proxy *proxyTemplate) measure(startTime time.Time, base string) {
 	elapsedTime := time.Now().Sub(startTime)
-	proxy.timer.Update(elapsedTime)
+	if proxy.timers[base] == nil {
+		proxy.timers[base] = metrics.NewTimer()
+	}
+	proxy.timers[base].Update(elapsedTime)
 	if Enable && Verbose {
-		proxy.printVerbose(elapsedTime)
+		proxy.printVerbose(elapsedTime, base)
 	}
 }
 
@@ -59,20 +63,21 @@ func (proxy *proxyTemplate) Execute(wr io.Writer, data interface{}) error {
 	}
 	error := proxy.original.Execute(wr, data)
 	if Enable {
-		defer proxy.measure(startTime)
+		// treat as no base name
+		defer proxy.measure(startTime, "")
 	}
 	return error
 }
 
 // instrucment template.ExecuteTemplate
-func (proxy *proxyTemplate) ExecuteTemplate(wr io.Writer, name string, data interface{}) error {
+func (proxy *proxyTemplate) ExecuteTemplate(wr io.Writer, base string, data interface{}) error {
 	var startTime time.Time
 	if Enable {
 		startTime = time.Now()
 	}
-	error := proxy.original.ExecuteTemplate(wr, name, data)
+	error := proxy.original.ExecuteTemplate(wr, base, data)
 	if Enable {
-		defer proxy.measure(startTime)
+		defer proxy.measure(startTime, base)
 	}
 	return error
 }
@@ -94,20 +99,23 @@ func Print(duration int) {
 		for {
 			startTime := time.Now()
 			for name, proxy := range proxyRegistry {
-				timer := proxy.timer
-				count := timer.Count()
-				if count > 0 {
-					fmt.Printf("time:%v\ttemplate:%s\tcount:%d\tmax:%f\tmean:%f\tmin:%f\tpercentile95:%f\tduration:%d\n",
-						time.Now(),
-						name,
-						timer.Count(),
-						float64(timer.Max())/float64(time.Second),
-						timer.Mean()/float64(time.Second),
-						float64(timer.Min())/float64(time.Second),
-						timer.Percentile(0.95)/float64(time.Second),
-						duration,
-					)
-					proxy.timer = metrics.NewTimer()
+				for base, timer := range proxy.timers {
+					count := timer.Count()
+					if count > 0 {
+						fmt.Printf(
+							"time:%v\ttemplate:%s\tbase:%s\tcount:%d\tmax:%f\tmean:%f\tmin:%f\tpercentile95:%f\tduration:%d\n",
+							time.Now(),
+							name,
+							base,
+							timer.Count(),
+							float64(timer.Max())/float64(time.Second),
+							timer.Mean()/float64(time.Second),
+							float64(timer.Min())/float64(time.Second),
+							timer.Percentile(0.95)/float64(time.Second),
+							duration,
+						)
+						proxy.timers[base] = metrics.NewTimer()
+					}
 				}
 			}
 			elapsedTime := time.Now().Sub(startTime)
