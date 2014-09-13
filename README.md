@@ -18,14 +18,15 @@ func main() {
   formTmpl.ExecuteTemplate(w, "base", struct)
 
   template_metrics.Verbose = true // print metrics on each rendering
-  template_metrics.Print() // print metrics on each second
+  template_metrics.Print(1) // print metrics on each 1 second
+  // template_metrics.Enable = false // turn off the instrumentation
 }
 ```
 
 Output Example (LTSV format):
 
 ```
-time:2014-09-08 05:06:57.99249161 +0900 JST     template:form   count:1 max:0.000301    mean:0.000301   min:0.000301    percentile95:0.000301
+time:2014-09-08 05:06:57.99249161 +0900 JST     template:form   count:1 max:0.000301    mean:0.000301   min:0.000301    percentile95:0.000301   duration:1
 ```
 
 Verbose Output Example (LTSV format):
