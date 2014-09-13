@@ -32,7 +32,7 @@ func newProxyTemplate(name string, template *template.Template) *proxyTemplate {
 func (proxy *proxyTemplate) printVerbose(elapsedTime time.Duration) {
 	fmt.Printf("time:%v\ttemplate:%s\telapsed:%f\n",
 		time.Now(),
-		proxy.original.Name(),
+		proxy.name,
 		elapsedTime.Seconds(),
 	)
 }
@@ -69,7 +69,7 @@ func (proxy *proxyTemplate) ExecuteTemplate(wr io.Writer, name string, data inte
 //Wrap  instrument template
 func WrapTemplate(name string, template *template.Template) *proxyTemplate {
 	proxy := newProxyTemplate(name, template)
-	proxyRegistry[template.Name()] = proxy
+	proxyRegistry[name] = proxy
 	return proxy
 }
 
