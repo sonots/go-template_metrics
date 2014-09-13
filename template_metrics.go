@@ -12,12 +12,23 @@ var Verbose = false
 var Enable = true
 
 // a set of proxies
-var proxyRegistry = make(map[string](*Template))
+var proxyRegistry = make(map[*template.Template](*Template))
+
+// a set of metrics
+var metricsRegistry = make(map[string](*Metrics))
 
 //Wrap  instrument template
 func WrapTemplate(name string, template *template.Template) *Template {
-	proxy := newTemplate(name, template)
-	proxyRegistry[name] = proxy
+	metrics := metricsRegistry[name]
+	if metrics == nil {
+		metrics = newMetrics(name)
+		metricsRegistry[name] = metrics
+	}
+	proxy := proxyRegistry[template]
+	if proxy == nil {
+		proxy = newTemplate(template, metrics)
+		proxyRegistry[template] = proxy
+	}
 	return proxy
 }
 
@@ -28,8 +39,8 @@ func Print(duration int) {
 		time.Sleep(timeDuration * time.Second)
 		for {
 			startTime := time.Now()
-			for _, proxy := range proxyRegistry {
-				proxy.printMetrics(duration)
+			for _, metrics := range metricsRegistry {
+				metrics.printMetrics(duration)
 			}
 			elapsedTime := time.Now().Sub(startTime)
 			time.Sleep(timeDuration*time.Second - elapsedTime)

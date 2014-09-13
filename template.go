@@ -8,39 +8,35 @@ import (
 
 type Template struct {
 	Original *template.Template
-	*Metrics
+	metrics  *Metrics
 }
 
-func newTemplate(name string, template *template.Template) *Template {
+func newTemplate(template *template.Template, metrics *Metrics) *Template {
 	return &Template{
 		template,
-		newMetrics(name),
+		metrics,
 	}
+}
+
+func (proxy *Template) measure(startTime time.Time, query string) {
+	proxy.metrics.measure(startTime, query)
 }
 
 // instrument template.Execute
 func (proxy *Template) Execute(wr io.Writer, data interface{}) error {
-	var startTime time.Time
 	if Enable {
-		startTime = time.Now()
-	}
-	error := proxy.Original.Execute(wr, data)
-	if Enable {
+		startTime := time.Now()
 		// treat as no base name
 		defer proxy.measure(startTime, "")
 	}
-	return error
+	return proxy.Original.Execute(wr, data)
 }
 
 // instrucment template.ExecuteTemplate
 func (proxy *Template) ExecuteTemplate(wr io.Writer, base string, data interface{}) error {
-	var startTime time.Time
 	if Enable {
-		startTime = time.Now()
-	}
-	error := proxy.Original.ExecuteTemplate(wr, base, data)
-	if Enable {
+		startTime := time.Now()
 		defer proxy.measure(startTime, base)
 	}
-	return error
+	return proxy.Original.ExecuteTemplate(wr, base, data)
 }
