@@ -19,14 +19,14 @@ var proxyRegistry = make(map[string](*proxyTemplate))
 
 type proxyTemplate struct {
 	name     string
-	original *template.Template
+	Original *template.Template
 	timers   map[string]metrics.Timer
 }
 
 func newProxyTemplate(name string, template *template.Template) *proxyTemplate {
 	return &proxyTemplate{
 		name:     name,
-		original: template,
+		Original: template,
 		timers:   map[string]metrics.Timer{},
 	}
 }
@@ -61,7 +61,7 @@ func (proxy *proxyTemplate) Execute(wr io.Writer, data interface{}) error {
 	if Enable {
 		startTime = time.Now()
 	}
-	error := proxy.original.Execute(wr, data)
+	error := proxy.Original.Execute(wr, data)
 	if Enable {
 		// treat as no base name
 		defer proxy.measure(startTime, "")
@@ -75,7 +75,7 @@ func (proxy *proxyTemplate) ExecuteTemplate(wr io.Writer, base string, data inte
 	if Enable {
 		startTime = time.Now()
 	}
-	error := proxy.original.ExecuteTemplate(wr, base, data)
+	error := proxy.Original.ExecuteTemplate(wr, base, data)
 	if Enable {
 		defer proxy.measure(startTime, base)
 	}
