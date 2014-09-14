@@ -1,17 +1,22 @@
 package template_metrics
 
 import (
-	"html/template" // ToDo: how can I change this from outside?
 	"io"
 	"time"
 )
 
+// Common interface between html/template and text/template
+type templateInterface interface {
+	Execute(wr io.Writer, data interface{}) error
+	ExecuteTemplate(wr io.Writer, base string, data interface{}) error
+}
+
 type Template struct {
-	Original *template.Template
+	Original templateInterface
 	metrics  *Metrics
 }
 
-func newTemplate(template *template.Template, metrics *Metrics) *Template {
+func newTemplate(template templateInterface, metrics *Metrics) *Template {
 	return &Template{
 		template,
 		metrics,

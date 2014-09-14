@@ -1,7 +1,6 @@
 package template_metrics
 
 import (
-	"html/template" // ToDo: how can I change this from outside?
 	"time"
 )
 
@@ -12,13 +11,13 @@ var Verbose = false
 var Enable = true
 
 // a set of proxies
-var proxyRegistry = make(map[*template.Template](*Template))
+var proxyRegistry = make(map[templateInterface](*Template))
 
 // a set of metrics
 var metricsRegistry = make(map[string](*Metrics))
 
 //Wrap  instrument template
-func WrapTemplate(name string, template *template.Template) *Template {
+func WrapTemplate(name string, template templateInterface) *Template {
 	metrics := metricsRegistry[name]
 	if metrics == nil {
 		metrics = newMetrics(name)

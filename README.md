@@ -6,7 +6,7 @@ Instrument template rendering
 
 ```go
 import (
-  "html/template"
+  "html/template" // or "text/template"
   template_metrics "github.com/sonots/go-template_metrics"
 )
 
@@ -39,7 +39,6 @@ time:2014-09-08 05:06:57.22659252 +0900 JST     template:form   base:base    ela
 # ToDo
 
 * Write tests
-* Support text/template
 
 # Contribution
 
