@@ -31,7 +31,14 @@ func WrapTemplate(name string, template templateInterface) *Template {
 	return proxy
 }
 
-//Print  print the metrics in each second
+//Flush  print the metrics
+func Flush() {
+	for _, metrics := range metricsRegistry {
+		metrics.printMetrics(-1)
+	}
+}
+
+//Print  print the metrics in each duration
 func Print(duration int) {
 	timeDuration := time.Duration(duration)
 	go func() {
