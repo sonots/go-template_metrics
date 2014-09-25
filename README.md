@@ -37,11 +37,27 @@ Verbose Output Example (LTSV format):
 time:2014-09-08 05:06:57.22659252 +0900 JST     template:form   base:base    elapsed:0.000301
 ```
 
-# Others
+# API
+
+## Print
+
+Print summarized metrics on each specified second:
+
+```go
+template_metrics.Print(60)
+```
+
+## Verbose
+
+Print metrics on each rendering:
+
+```go
+template_metrics.Verbose = true
+```
 
 ## Enable
 
-It is possible to diable instrumentation as:
+Diable instrumentation as:
 
 ```
 template_metrics.Enable = false
@@ -49,7 +65,7 @@ template_metrics.Enable = false
 
 ## Flush()
 
-It is possible to flush metrics on arbitrary timing by calling `Flush()` as:
+Flush metrics on arbitrary timing by calling `Flush()` as:
 
 ```
 template_metrics.Flush()

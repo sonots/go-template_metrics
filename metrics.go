@@ -56,14 +56,16 @@ func (proxy *Metrics) printMetrics(duration int) {
 //measure the time
 func (proxy *Metrics) measure(startTime time.Time, base string) {
 	elapsedTime := time.Now().Sub(startTime)
-	if proxy.timers[base] == nil {
-		mutex.Lock()
+	if Summary {
 		if proxy.timers[base] == nil {
-			proxy.timers[base] = metrics.NewTimer()
+			mutex.Lock()
+			if proxy.timers[base] == nil {
+				proxy.timers[base] = metrics.NewTimer()
+			}
+			mutex.Unlock()
 		}
-		mutex.Unlock()
+		proxy.timers[base].Update(elapsedTime)
 	}
-	proxy.timers[base].Update(elapsedTime)
 	if Verbose {
 		proxy.printVerbose(elapsedTime, base)
 	}
