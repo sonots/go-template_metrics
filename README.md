@@ -77,7 +77,7 @@ template_metrics.Flush()
 
 # Contribution
 
-* Fork (https://github.com/sonots/go-http_metrics/fork)
+* Fork (https://github.com/sonots/go-template_metrics/fork)
 * Create a feature branch
 * Commit your changes
 * Rebase your local changes against the master branch
